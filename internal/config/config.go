@@ -10,7 +10,9 @@ const APP_NAME = "datastore-exporter"
 
 // Config stores configuration options set by configuration file or env vars
 type Config struct {
-	Log Log
+	Log     Log
+	GCS     GCS
+	Timeout string
 }
 
 // Log contains logging configuration
@@ -20,11 +22,18 @@ type Log struct {
 	Level   string
 }
 
+type GCS struct {
+	ProjectID  string
+	BucketName string
+}
+
 // Default is a default configuration setup with sane defaults
 var Default = Config{
 	Log{
 		Level: zerolog.InfoLevel.String(),
 	},
+	GCS{},
+	"1h",
 }
 
 // New constructs a new Config instance

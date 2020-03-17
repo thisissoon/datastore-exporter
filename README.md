@@ -1,7 +1,11 @@
 # datastore-exporter
 
-Go CLI tool to export datastore
+Go CLI tool to export Google Cloud Datastore. Exports all kinds and namespaces and saves to a GCS bucket. As the Datastore export operation is asynchronous the process will poll the state of the operation reporting any errors.
 
+To run locally a service account is required with the correct permissions to export from Datastore: 
+1. Create a service account with the roles of Cloud Datastore Import Export Admin
+2. Download the key as JSON to your local machine
+3. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of the account key e.g. `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa.json
 
 ## Development
 
@@ -39,7 +43,13 @@ Alternatively a config file path can be provided through the
 
 #### Example datastore-exporter.toml
 ```toml
+timeout = "1h" # duration the process will run for (default is 1 hour)
+
 [log]
 console = true
 level = "debug"  # [debug|info|error]
+
+[gcs]
+projectID = "project-id" # ID of the Google Cloud Project
+bucketName = "bucket-name" # name of the bucket for exports to be saved in
 ```

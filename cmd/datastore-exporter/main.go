@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"io"
 	"os"
+	"time"
 
 	"github.com/thisissoon/datastore-exporter/internal/config"
+	"github.com/thisissoon/datastore-exporter/internal/exporter"
 	"github.com/thisissoon/datastore-exporter/internal/version"
 
 	"github.com/rs/zerolog"
@@ -32,8 +35,8 @@ func main() {
 func datastoreexporterCmd() *cobra.Command {
 	var configPath string
 	cmd := &cobra.Command{
-		Use:   "datastore-exporter",
-		Short: "Run the service",
+		Use:           "datastore-exporter",
+		Short:         "Run the service",
 		SilenceErrors: true,
 		SilenceUsage:  true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -51,7 +54,7 @@ func datastoreexporterCmd() *cobra.Command {
 			log = initLogger(cfg.Log)
 			return nil
 		},
-		RunE:   datastoreexporterRun,
+		RunE: datastoreexporterRun,
 	}
 	// Global flags
 	pflags := cmd.PersistentFlags()
@@ -66,7 +69,17 @@ func datastoreexporterCmd() *cobra.Command {
 // datastore-exporterRun is executed when the CLI executes
 // the datastore-exporter command
 func datastoreexporterRun(cmd *cobra.Command, _ []string) error {
-	return cmd.Help()
+	d, err := time.ParseDuration(cfg.Timeout)
+	if err != nil {
+		return err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), d)
+	defer cancel()
+	e, err := exporter.NewExporter(ctx, log, cfg.GCS.ProjectID, cfg.GCS.BucketName)
+	if err != nil {
+		return err
+	}
+	return e.Export(ctx)
 }
 
 // initLogger constructs a default logger from config
