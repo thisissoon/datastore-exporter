@@ -7,6 +7,8 @@ To run locally a service account is required with the correct permissions to exp
 2. Download the key as JSON to your local machine
 3. Set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of the account key e.g. `export GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa.json
 
+Alternatively if you're using the Helm Chart you can make use of [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) and set the `gcloud.serviceAccount.workloadIdentity` field to your service account's name instead of having to create and manage a secret.
+
 ## Development
 
  - Go 1.11+

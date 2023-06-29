@@ -1,4 +1,4 @@
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: {{ include "datastore-exporter.fullname" . }}
@@ -17,16 +17,21 @@ spec:
           imagePullSecrets:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          {{- with .Values.gcloud.serviceAccount.workloadIdentity }}
+          serviceAccountName: {{ . | quote}}
+          {{- end }}
           volumes:
           - name: config
             configMap:
               name: {{ include "datastore-exporter.fullname" . }}-config
+          {{- if (not .Values.gcloud.serviceAccount.workloadIdentity) }}
           - name: gcloud-credentials
             secret:
               secretName: {{ .Values.gcloud.serviceAccount.secretName }}
               items:
                 - key: {{ .Values.gcloud.serviceAccount.key }}
                   path: {{ .Values.gcloud.serviceAccount.key }}
+          {{- end }}
           containers:
           - name: {{ .Chart.Name }}
             image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
@@ -36,6 +41,7 @@ spec:
               readOnly: true
               mountPath: /etc/datastore-exporter/datastore-exporter.toml
               subPath: datastore-exporter.toml
+          {{- if (not .Values.gcloud.serviceAccount.workloadIdentity) }}
             - name: gcloud-credentials
               mountPath: /etc/datastore-exporter/credentials.json
               readOnly: true
@@ -43,6 +49,7 @@ spec:
             env:
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /etc/datastore-exporter/credentials.json
+          {{- end }}
           restartPolicy: OnFailure
           {{- with .Values.nodeSelector }}
           nodeSelector:

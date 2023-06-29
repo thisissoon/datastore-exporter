@@ -90,6 +90,6 @@ image:
 .PHONY: test
 test:
 ifeq ("$(wildcard $(shell which gocov))","")
-	go get github.com/axw/gocov/gocov
+	go install github.com/axw/gocov/gocov@latest
 endif
 	gocov test ${PKG_LIST} | gocov report
